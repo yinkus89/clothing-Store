@@ -9,8 +9,8 @@
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "typeRoots": ["node_modules/@types", "types"],
-    "types": ["node", "jest"]  // Only one "types" array is needed
+    "types": ["node", "jest"] // Only one "types" array is needed
   },
-  "include": ["src/**/*.ts", "types/**/*.d.ts"],
+  "include": ["src/**/*.ts", "types/**/*.d.ts", "../backend/src/server.ts"],
   "exclude": ["node_modules"]
 }
