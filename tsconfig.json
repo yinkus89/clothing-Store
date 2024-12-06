@@ -1,21 +1,16 @@
 {
   "compilerOptions": {
-    "target": "ES2020",                 // Specify ECMAScript target version
-    "module": "CommonJS",              // Specify module code generation
-    "rootDir": "./",                   // Specify project root to include all source files
-    "outDir": "./dist",                // Redirect output structure to the dist folder
-    "strict": true,                    // Enable all strict type-checking options
-    "esModuleInterop": true,           // Allows default imports from CommonJS modules
-    "forceConsistentCasingInFileNames": true, // Ensure consistent casing in imports
-    "skipLibCheck": true,              // Skip type checking of declaration files
-    "resolveJsonModule": true,         // Allow importing JSON files as modules
-    "moduleResolution": "node",        // Specify module resolution strategy
-    "typeRoots": ["./node_modules/@types"], // Look for type definitions here
-    "baseUrl": "./",                   // Base directory for resolving non-relative module names
-    "paths": {
-      "*": ["node_modules/*"]          // Resolve module imports
-    }
+    "target": "ES6",
+    "module": "CommonJS",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "typeRoots": ["node_modules/@types", "types"],
+    "types": ["node", "jest"]  // Only one "types" array is needed
   },
-  "include": ["src/**/*", "prisma/**/*"], // Include both src and prisma folders
-  "exclude": ["node_modules", "dist"]     // Exclude node_modules and output directory
+  "include": ["src/**/*.ts", "types/**/*.d.ts"],
+  "exclude": ["node_modules"]
 }
