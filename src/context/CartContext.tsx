@@ -1,7 +1,5 @@
-// CartContext.tsx
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// Define the cart item structure
 interface CartItem {
   id: number;
   quantity: number;
@@ -12,13 +10,18 @@ interface CartContextType {
   addToCart: (productId: number) => void;
   removeFromCart: (productId: number) => void;
   getCartItemCount: () => number;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// Cart provider to manage cart items globally
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const storedCartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+  const [cartItems, setCartItems] = useState<CartItem[]>(storedCartItems);
+
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const addToCart = (productId: number) => {
     setCartItems((prevItems) => {
@@ -38,17 +41,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getCartItemCount = () => {
-    return cartItems.reduce((acc, item) => acc + item.quantity, 0); // Sum up the quantity of items in the cart
+    return cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, getCartItemCount }}>
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, getCartItemCount, clearCart }}>
       {children}
     </CartContext.Provider>
   );
 };
 
-// Hook to use the cart context
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {

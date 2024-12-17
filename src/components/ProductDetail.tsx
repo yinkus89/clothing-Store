@@ -8,7 +8,7 @@ const ProductDetail: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      axios.get(`http://localhost:5000/products/${id}`)
+      axios.get(`http://localhost:5000/api/products/${id}`)
         .then(response => setProduct(response.data))
         .catch(error => console.error('Error fetching product', error));
     }

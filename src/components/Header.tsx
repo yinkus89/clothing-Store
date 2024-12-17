@@ -10,13 +10,12 @@ interface CartItem {
 
 interface HeaderProps {
   cartItems: CartItem[];
+  isAuthenticated: boolean;
+  onLogout?: () => void; // Optional: Logout handler
 }
 
-const Header: React.FC<HeaderProps> = ({ cartItems }) => {
-  // Calculate the total number of items in the cart
+const Header: React.FC<HeaderProps> = ({ cartItems, isAuthenticated, onLogout }) => {
   const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
-
-  // Calculate the total price of items in the cart
   const totalPrice = cartItems
     .reduce((total, item) => total + item.price * item.quantity, 0)
     .toFixed(2);
@@ -28,15 +27,24 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
         <Link to="/" className="text-2xl font-bold hover:text-orange-400">
           Clothing Store
         </Link>
+
         {/* Navigation Links */}
         <nav className="flex space-x-6">
           <Link to="/" className="hover:text-orange-400">Home</Link>
           <Link to="/products" className="hover:text-orange-400">Products</Link>
-          <Link to="/cart" className="relative flex items-center hover:text-orange-400">
-            {/* Cart Icon with item count */}
+
+          {/* Cart Icon */}
+          <Link
+            to="/cart"
+            className="relative flex items-center hover:text-orange-400"
+            aria-label="Shopping Cart"
+          >
             <span className="material-icons">shopping_cart</span>
             {cartItemCount > 0 && (
-              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-2 py-1">
+              <span
+                className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-2 py-1"
+                aria-live="polite"
+              >
                 {cartItemCount}
               </span>
             )}
@@ -44,9 +52,25 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
               <span className="ml-2 text-sm">${totalPrice}</span>
             )}
           </Link>
-          <li><Link to="/about">About Us</Link></li>
-          <Link to="/register" className="hover:text-orange-400">Register</Link>
-          <Link to="/login" className="hover:text-orange-400">Login</Link>
+
+          {/* Authentication Links */}
+          {isAuthenticated ? (
+            <>
+              <Link to="/profile" className="hover:text-orange-400">Profile</Link>
+              <button
+                onClick={onLogout}
+                className="hover:text-orange-400 focus:outline-none"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/about" className="hover:text-orange-400">About Us</Link>
+              <Link to="/register" className="hover:text-orange-400">Register</Link>
+              <Link to="/login" className="hover:text-orange-400">Login</Link>
+            </>
+          )}
         </nav>
       </div>
     </header>

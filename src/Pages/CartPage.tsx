@@ -9,10 +9,10 @@ interface CartItem {
 
 interface CartPageProps {
   cartItems: CartItem[];
-  removeItem: (productId: string) => void;
+  removeFromCart: (productId: string) => void; // Ensure this matches the actual function signature
 }
 
-const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
+const CartPage: React.FC<CartPageProps> = ({ cartItems, removeFromCart }) => {
   const navigate = useNavigate(); // Initialize the navigate function from react-router-dom
 
   // Form state for checkout
@@ -30,6 +30,9 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
     cvv: '',
   });
 
+  // Error state for form validation
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   const isFormValid =
     shippingAddress.name &&
     shippingAddress.street &&
@@ -44,10 +47,35 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
 
   const totalAmount = cartItems.reduce((total, item) => total + item.price, 0).toFixed(2);
 
+  // Form validation
+  const validateForm = () => {
+    let formErrors: { [key: string]: string } = {};
+
+    // Validate shipping address
+    if (!shippingAddress.name) formErrors.name = 'Name is required.';
+    if (!shippingAddress.street) formErrors.street = 'Street address is required.';
+    if (!shippingAddress.city) formErrors.city = 'City is required.';
+    if (!shippingAddress.state) formErrors.state = 'State is required.';
+    if (!shippingAddress.country) formErrors.country = 'Country is required.';
+
+    // Validate payment method
+    if (!paymentMethod) formErrors.paymentMethod = 'Payment method is required.';
+
+    // Validate payment details if credit card is selected
+    if (paymentMethod === 'credit-card') {
+      if (!paymentDetails.cardNumber) formErrors.cardNumber = 'Card number is required.';
+      if (!paymentDetails.expDate) formErrors.expDate = 'Expiration date is required.';
+      if (!paymentDetails.cvv) formErrors.cvv = 'CVV is required.';
+    }
+
+    setErrors(formErrors);
+    return Object.keys(formErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // After successful form submission, navigate to the confirmation page
-    if (isFormValid) {
+    if (validateForm()) {
+      // After successful form submission, navigate to the confirmation page
       navigate('/confirmation');
     }
   };
@@ -68,6 +96,7 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
           onChange={(e) => setShippingAddress({ ...shippingAddress, name: e.target.value })}
           className="w-full p-2 border rounded"
         />
+        {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
       </div>
 
       <div className="mb-4">
@@ -78,6 +107,7 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
           onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })}
           className="w-full p-2 border rounded"
         />
+        {errors.street && <p className="text-red-500 text-sm">{errors.street}</p>}
       </div>
 
       <div className="mb-4">
@@ -88,6 +118,7 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
           onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
           className="w-full p-2 border rounded"
         />
+        {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
       </div>
 
       <div className="mb-4">
@@ -98,6 +129,7 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
           onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })}
           className="w-full p-2 border rounded"
         />
+        {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
       </div>
 
       <div className="mb-4">
@@ -108,6 +140,7 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
           onChange={(e) => setShippingAddress({ ...shippingAddress, country: e.target.value })}
           className="w-full p-2 border rounded"
         />
+        {errors.country && <p className="text-red-500 text-sm">{errors.country}</p>}
       </div>
 
       {/* Payment Method */}
@@ -122,6 +155,7 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
           <option value="credit-card">Credit Card</option>
           <option value="paypal">PayPal</option>
         </select>
+        {errors.paymentMethod && <p className="text-red-500 text-sm">{errors.paymentMethod}</p>}
       </div>
 
       {/* Payment Details for Credit Card */}
@@ -135,6 +169,7 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
               onChange={(e) => setPaymentDetails({ ...paymentDetails, cardNumber: e.target.value })}
               className="w-full p-2 border rounded"
             />
+            {errors.cardNumber && <p className="text-red-500 text-sm">{errors.cardNumber}</p>}
           </div>
 
           <div className="mb-4">
@@ -145,6 +180,7 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
               onChange={(e) => setPaymentDetails({ ...paymentDetails, expDate: e.target.value })}
               className="w-full p-2 border rounded"
             />
+            {errors.expDate && <p className="text-red-500 text-sm">{errors.expDate}</p>}
           </div>
 
           <div className="mb-4">
@@ -155,6 +191,7 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
               onChange={(e) => setPaymentDetails({ ...paymentDetails, cvv: e.target.value })}
               className="w-full p-2 border rounded"
             />
+            {errors.cvv && <p className="text-red-500 text-sm">{errors.cvv}</p>}
           </div>
         </>
       )}
@@ -170,7 +207,7 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, removeItem }) => {
                   {item.name} - ${item.price}
                 </span>
                 <button
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => removeFromCart(item.id)} // Ensure the function matches
                   className="text-red-500 hover:underline"
                 >
                   Remove

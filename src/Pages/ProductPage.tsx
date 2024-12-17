@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext'; // Import the useCart hook
+import axios from 'axios';
+import SingleProductDisplay from '../components/SingleProductDisplay'; // Import the new SingleProductDisplay component
 
 interface Product {
   id: number;
@@ -10,25 +12,57 @@ interface Product {
   imageUrl: string;
 }
 
-interface ProductPageProps {
-  products: Product[];
-}
-
-const ProductPage: React.FC<ProductPageProps> = ({ products }) => {
+const ProductPage: React.FC = () => {
   const { id } = useParams();
-  const { cartItems, addToCart, getCartItemCount } = useCart(); // Access cart context here
-  const [searchQuery, setSearchQuery] = useState('');
+  const { cartItems, addToCart, getCartItemCount } = useCart();
+  const [product, setProduct] = useState<Product | null>(null); // State to store a single product
+  const [products, setProducts] = useState<Product[]>([]); // State to store all products
+  const [loading, setLoading] = useState(true); // State to handle loading state
+  const [error, setError] = useState<string | null>(null); // State to handle errors
+  const [searchQuery, setSearchQuery] = useState(''); // State to handle search input
 
-  // Filter products based on search query
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    // Fetch all products from the API (or you can fetch a single product based on ID)
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/products'); // Replace with your API URL
+        setProducts(response.data);
+      } catch (err) {
+        setError('Failed to fetch products');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const product = products.find((product) => product.id === Number(id));
+    fetchProducts();
+  }, []);
 
-  if (!id) {
-    return <p>No product ID provided</p>;
+  // Fetch specific product by ID
+  useEffect(() => {
+    if (id) {
+      const fetchProduct = async () => {
+        try {
+          const response = await axios.get(`http://localhost:5000/api/${id}`);
+          setProduct(response.data);
+        } catch (err) {
+          setError('Failed to fetch the product');
+        }
+      };
+
+      fetchProduct();
+    }
+  }, [id]);
+
+  if (loading) {
+    return <p>Loading products...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+
+  if (!id || isNaN(Number(id))) {
+    return <p>Invalid or missing product ID</p>;
   }
 
   if (!product) {
@@ -40,54 +74,44 @@ const ProductPage: React.FC<ProductPageProps> = ({ products }) => {
     );
   }
 
+  // Filter products based on search query
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="product-page container mx-auto p-4">
-      <h1 className="text-3xl font-bold">{product.name}</h1>
-      <img className="w-full h-auto" src={product.imageUrl} alt={product.name} />
-      <p className="mt-2">{product.description}</p>
-      <p className="mt-4 text-xl font-bold">${product.price}</p>
+      <SingleProductDisplay product={product} onAddToCart={addToCart} />
 
-      {/* Cart Item Count */}
       <div className="mt-4">
-        <button className="bg-blue-500 text-white py-2 px-4 rounded">
+        <button
+          className={`bg-blue-500 text-white py-2 px-4 rounded ${getCartItemCount() === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
           Cart ({getCartItemCount()})
         </button>
       </div>
 
-      {/* Search Bar */}
       <div className="mt-6">
         <input
           type="text"
           placeholder="Search products..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-md"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md"
         />
       </div>
 
-      {/* Display filtered products */}
       <div className="mt-6">
-        <h2 className="text-2xl font-bold">Search Results:</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredProducts.length === 0 ? (
-            <p>No products found</p>
-          ) : (
-            filteredProducts.map((product) => (
-              <div key={product.id} className="product-card p-4 border rounded-md">
-                <h3 className="text-xl font-semibold">{product.name}</h3>
-                <img src={product.imageUrl} alt={product.name} className="w-full h-auto" />
-                <p className="mt-2">{product.description}</p>
-                <p className="mt-4 text-xl font-bold">${product.price}</p>
-                <button
-                  className="mt-2 bg-green-500 text-white py-2 px-4 rounded"
-                  onClick={() => addToCart(product.id)}
-                >
-                  Add to Cart
-                </button>
-              </div>
-            ))
-          )}
+        <h3 className="text-xl font-semibold">Other Products</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredProducts.map((product) => (
+            <SingleProductDisplay key={product.id} product={product} onAddToCart={addToCart} />
+          ))}
         </div>
+      </div>
+
+      <div className="mt-4">
+        <Link to="/" className="text-blue-500 hover:underline">Go back to homepage</Link>
       </div>
     </div>
   );

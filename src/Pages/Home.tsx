@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import axios from 'axios'; // Corrected import
 import ProductCard from '../components/ProductCard';
 
 interface Product {
@@ -16,12 +17,36 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ products, onAddToCart }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // Filter products based on search query
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Replace this with an actual API call to fetch products
+  useEffect(() => {
+    // Example of how to fetch products using Axios
+    axios.get('http://localhost:5000/api/products') // Replace with your actual API URL
+      .then((response) => {
+        // Handle the response and update products state
+        console.log(response.data); // Example: Log the fetched products
+        // You would update the products state here if you fetch them from the API
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      });
+  }, []); // Empty dependency array to run this only once on component mount
+
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery) return products;
+    return products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, products]);
+
+  if (loading) {
+    return <div className="text-center">Loading products...</div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">

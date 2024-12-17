@@ -1,46 +1,72 @@
 import { useState } from 'react';
 
+interface ShippingAddress {
+  name: string;
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  zip: string;
+}
+
+interface PaymentDetails {
+  cardNumber: string;
+  expDate: string;
+  cvv: string;
+}
+
 const useCheckoutForm = () => {
-  const [shippingAddress, setShippingAddress] = useState({
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     name: '',
     street: '',
     city: '',
     state: '',
     country: '',
-    zip: '',  // Add 'zip' here
+    zip: '', 
   });
 
   const [paymentMethod, setPaymentMethod] = useState('paypal');
-  const [paymentDetails, setPaymentDetails] = useState({
+  const [paymentDetails, setPaymentDetails] = useState<PaymentDetails>({
     cardNumber: '',
     expDate: '',
     cvv: ''
   });
   const [orderSuccess, setOrderSuccess] = useState(false);
 
-  // Handle change for form fields
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleShippingChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-
-    if (name in shippingAddress) {
-      setShippingAddress((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    } else if (name in paymentDetails) {
-      setPaymentDetails((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    } else if (name === 'paymentMethod') {
-      setPaymentMethod(value);
-    }
+    setShippingAddress((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
-  // Handle checkout form submission
+  const handlePaymentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setPaymentDetails((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handlePaymentMethodChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setPaymentMethod(event.target.value);
+  };
+
   const handleCheckoutSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    // Logic to submit the order
+
+    // Basic validation
+    if (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.country || !shippingAddress.zip) {
+      alert('Please fill out all shipping address fields');
+      return;
+    }
+
+    if (!paymentDetails.cardNumber || !paymentDetails.expDate || !paymentDetails.cvv) {
+      alert('Please fill out all payment details');
+      return;
+    }
+
     console.log('Order submitted:', { shippingAddress, paymentMethod, paymentDetails });
     setOrderSuccess(true);  // Example of setting success after submitting
   };
@@ -50,8 +76,11 @@ const useCheckoutForm = () => {
     paymentMethod,
     paymentDetails,
     orderSuccess,
-    handleChange,
-    handleCheckoutSubmit
+    handleShippingChange,
+    handlePaymentChange,
+    handlePaymentMethodChange,
+    handleCheckoutSubmit,
+    isFormValid: shippingAddress.name && shippingAddress.street && paymentDetails.cardNumber && paymentDetails.expDate
   };
 };
 

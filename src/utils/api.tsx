@@ -24,8 +24,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-
-
+// Product interface definition
 interface Product {
   id: number;
   name: string;
@@ -34,11 +33,10 @@ interface Product {
   imageUrl: string;
 }
 
-
-
-export const fetchProducts = async (): Promise<any[]> => {
+// Fetch all products
+export const fetchProducts = async (): Promise<Product[]> => {
   try {
-    const response = await axios.get('/api/products'); // API route fetching from Prisma
+    const response = await api.get('/products'); // Make sure to use 'api' instance
     return response.data;
   } catch (error: any) {
     console.error('Error fetching products:', error.response?.data || error.message);
@@ -46,37 +44,36 @@ export const fetchProducts = async (): Promise<any[]> => {
   }
 };
 
-
 // Fetch a single product by ID
-export const fetchProductById = async (id: string): Promise<any> => {
+export const fetchProductById = async (id: string): Promise<Product> => {
   try {
-    const response = await api.get(`/api/products/${id}`);
+    const response = await api.get(`/products/${id}`); // Corrected endpoint
     return response.data;
   } catch (error: any) {
     console.error('Error fetching product by ID:', error.response?.data || error.message);
-    throw error.response?.data || { message: 'Error fetching product' };
+    throw new Error(error.response?.data?.error || 'Error fetching product');
   }
 };
 
 // Login user
 export const loginUser = async (email: string, password: string): Promise<{ token: string }> => {
   try {
-    const response = await api.post('/login', { email, password });
+    const response = await api.post('/api/auth/login', { email, password }); // Ensure correct path for login
     return response.data; // Save the token for authenticated requests
   } catch (error: any) {
     console.error('Error logging in:', error.response?.data || error.message);
-    throw error.response?.data || { message: 'Error logging in' };
+    throw new Error(error.response?.data?.error || 'Error logging in');
   }
 };
 
 // Register user
 export const registerUser = async (userData: { email: string; password: string; username: string }): Promise<any> => {
   try {
-    const response = await api.post('/register', userData);
+    const response = await api.post('/api/auth/register', userData); // Ensure correct path for registration
     return response.data;
   } catch (error: any) {
     console.error('Error registering user:', error.response?.data || error.message);
-    throw error.response?.data || { message: 'Error registering user' };
+    throw new Error(error.response?.data?.error || 'Error registering user');
   }
 };
 

@@ -2,15 +2,27 @@
   "compilerOptions": {
     "target": "ES6",
     "module": "CommonJS",
+    "jsx": "react-jsx",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
-    "typeRoots": ["node_modules/@types", "types"],
-    "types": ["node", "jest"] // Only one "types" array is needed
+    "typeRoots": ["node_modules/@types"],
+    "types": ["node", "jest", "@testing-library/jest-dom", "@testing-library/react"]
   },
-  "include": ["src/**/*.ts", "types/**/*.d.ts", "../backend/src/server.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",    // Include TypeScript/JSX files for React
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx", // Include TypeScript test files
+    "tests/**/*.test.ts",
+    "tests/**/*.test.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "backend"  // Ensure backend files are excluded if not needed for frontend
+  ]
 }
+
